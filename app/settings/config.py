@@ -2,13 +2,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    DATABASE_NAME: str
-    DATABASE_USER: str
-    DATABASE_PASSWORD: str
-    DATABASE_HOST: str
-    DATABASE_PORT: int
+    POSTGRES_DATABASE_NAME: str
+    POSTGRES_USERNAME: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
 
-    EVENTS_PROVIDER_BASE_URL: str = "http://events-provider.dev-2.python-labs.ru"
+    EVENTS_PROVIDER_BASE_URL: str = ""
     EVENTS_PROVIDER_API_KEY: str = ""
     EVENTS_PROVIDER_TIMEOUT: float = 10.0
 
@@ -26,9 +26,9 @@ class Settings(BaseSettings):
     @property
     def database_url(self):
         return (
-            f"postgresql+asyncpg://{self.DATABASE_USER}"
-            f":{self.DATABASE_PASSWORD}"
-            f"@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
+            f"postgresql+asyncpg://{self.POSTGRES_USERNAME}"
+            f":{self.POSTGRES_PASSWORD}"
+            f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DATABASE_NAME}"
         )
 
     # database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/events_aggregator"
