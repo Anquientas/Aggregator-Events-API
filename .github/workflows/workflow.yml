@@ -41,26 +41,21 @@ jobs:
 
       - name: Check Alembic migrations load correctly
         env:
-          DATABASE_NAME: ci
-          DATABASE_USER: ci
-          DATABASE_PASSWORD: ci
-          DATABASE_HOST: localhost
-          DATABASE_PORT: "5432"
+          POSTGRES_DATABASE_NAME: ci
+          POSTGRES_USERNAME: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5432"
         run: uv run alembic upgrade head --sql
 
       - name: Run pytest
         env:
-          # Тестам реальный Postgres не нужен (см. tests/conftest.py — своя SQLite
-          # на тест), но Settings при импорте требует эти переменные заданными.
-          DATABASE_NAME: ci
-          DATABASE_USER: ci
-          DATABASE_PASSWORD: ci
-          DATABASE_HOST: localhost
-          DATABASE_PORT: "5432"
+          POSTGRES_DATABASE_NAME: ci
+          POSTGRES_USERNAME: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5432"
         run: uv run pytest -v
-
-  # Собирает образ и пушит в GitHub Container Registry (ghcr.io).
-  # Аутентификация — через встроенный GITHUB_TOKEN, отдельный секрет заводить не нужно.
   build-and-push:
     name: Build & push image
     runs-on: ubuntu-latest
