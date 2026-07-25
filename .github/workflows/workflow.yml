@@ -106,72 +106,17 @@ jobs:
     needs: build-and-push
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: Deploy
-        uses: appleboy/ssh-action@v1.2.0
-        env:
-          IMAGE: ${{ needs.build-and-push.outputs.image }}
-          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
-          DATABASE_USER: ${{ secrets.DATABASE_USER }}
-          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-          EVENTS_PROVIDER_API_KEY: ${{ secrets.EVENTS_PROVIDER_API_KEY }}
-          GHCR_ACTOR: ${{ github.actor }}
-          GHCR_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
-          EVENTS_PROVIDER_BASE_URL: ${{ vars.EVENTS_PROVIDER_BASE_URL }}
-          EVENTS_PROVIDER_TIMEOUT: ${{ vars.EVENTS_PROVIDER_TIMEOUT }}
-          WORKER_SYNC_INTERVAL: ${{ vars.WORKER_SYNC_INTERVAL }}
-          SEATS_CACHE_TIMEOUT: ${{ vars.SEATS_CACHE_TIMEOUT }}
-          DEFAULT_PAGE_SIZE: ${{ vars.DEFAULT_PAGE_SIZE }}
-          DATABASE_PORT: ${{ vars.DATABASE_PORT }}
-          DATABASE_CONTAINER_NAME: ${{ vars.DATABASE_CONTAINER_NAME }}
-          EVENTS_AGGREGATOR_CONTAINER_NAME: ${{ vars.EVENTS_AGGREGATOR_CONTAINER_NAME }}
-          DATABASE_VOLUME_NAME: ${{ vars.DATABASE_VOLUME_NAME }}
-          EVENTS_AGGREGATOR_PORT: ${{ vars.EVENTS_AGGREGATOR_PORT }}
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT || 22 }}
-          envs: >-
-            IMAGE,DATABASE_NAME,DATABASE_USER,DATABASE_PASSWORD,EVENTS_PROVIDER_API_KEY,
-            GHCR_ACTOR,GHCR_TOKEN,
-            EVENTS_PROVIDER_BASE_URL,EVENTS_PROVIDER_TIMEOUT,WORKER_SYNC_INTERVAL,
-            SEATS_CACHE_TIMEOUT,DEFAULT_PAGE_SIZE,DATABASE_PORT,DATABASE_CONTAINER_NAME,
-            EVENTS_AGGREGATOR_CONTAINER_NAME,DATABASE_VOLUME_NAME,EVENTS_AGGREGATOR_PORT
-          script: |
-            set -e
-            mkdir -p ~/events-aggregator
-            cd ~/events-aggregator
+      - name: Send deploy request
+        run: |
+          HTTP_CODE=$(curl -s -o response.txt -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-API-Key: ${{ secrets.LMS_API_KEY }}" \
+            -d '{"image":"ghcr.io/${{ needs.build.outputs.repo }}:${{ github.sha }}","repository":"${{ github.repository }}"}' \
+            https://lms.python-labs.ru/api/deploy-requests)
 
-            if [ ! -f docker-compose.yml ]; then
-              echo "docker-compose.yml не найден на сервере — скопируйте его один раз"
-              echo "вручную (scp docker-compose.yml сервер:~/events-aggregator/) перед первым деплоем."
-              exit 1
-            fi
-
-            cat > .env <<ENVEOF
-            DATABASE_NAME=$DATABASE_NAME
-            DATABASE_USER=$DATABASE_USER
-            DATABASE_PASSWORD=$DATABASE_PASSWORD
-            DATABASE_HOST=database
-            DATABASE_PORT=$DATABASE_PORT
-            EVENTS_PROVIDER_BASE_URL=$EVENTS_PROVIDER_BASE_URL
-            EVENTS_PROVIDER_API_KEY=$EVENTS_PROVIDER_API_KEY
-            EVENTS_PROVIDER_TIMEOUT=$EVENTS_PROVIDER_TIMEOUT
-            WORKER_SYNC_INTERVAL=$WORKER_SYNC_INTERVAL
-            SEATS_CACHE_TIMEOUT=$SEATS_CACHE_TIMEOUT
-            DEFAULT_PAGE_SIZE=$DEFAULT_PAGE_SIZE
-            DATABASE_CONTAINER_NAME=$DATABASE_CONTAINER_NAME
-            EVENTS_AGGREGATOR_CONTAINER_NAME=$EVENTS_AGGREGATOR_CONTAINER_NAME
-            DATABASE_VOLUME_NAME=$DATABASE_VOLUME_NAME
-            EVENTS_AGGREGATOR_PORT=$EVENTS_AGGREGATOR_PORT
-            ENVEOF
-            chmod 600 .env
-
-            sed -i "s#^\s*image:.*events-aggregator.*#    image: ${IMAGE}:latest#" docker-compose.yml || true
-
-            if [ -n "$GHCR_TOKEN" ]; then
-              echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_ACTOR" --password-stdin
-            fi
-            docker compose pull
-            docker compose up -d --remove-orphans
-            docker image prune -f
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Deployment failed with status code $HTTP_CODE"
+            echo "Response body:"
+            cat response.txt
+            exit 1
+          fi
