@@ -188,3 +188,20 @@ async def test_cancel_unknown_ticket_returns_404(
     response = await api_client.delete("/api/tickets/does-not-exist")
 
     assert response.status_code == 404
+
+
+async def test_create_ticket_invalid_body_returns_400(
+    api_client: AsyncClient,
+) -> None:
+    response = await api_client.post(
+        "/api/tickets",
+        json={
+            "event_id": "event-1",
+            "first_name": "Иван",
+            "last_name": "Иванов",
+            "email": "x",
+            "seat": "A15",
+        },
+    )
+    
+    assert response.status_code == 400
