@@ -1,4 +1,5 @@
 import datetime
+from contextlib import AbstractAsyncContextManager
 from typing import Protocol
 
 from app.domain.entities import Event, Place, SyncState, Ticket
@@ -37,3 +38,9 @@ class SyncRepository(Protocol):
     async def get_state(self) -> SyncState: ...
 
     async def save_state(self, state: SyncState) -> None: ...
+
+
+class SyncCheckpoint(Protocol):
+    """Изолирует изменения одного события от остальной части синхронизации."""
+
+    def savepoint(self) -> AbstractAsyncContextManager[None]: ...

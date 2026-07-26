@@ -6,6 +6,7 @@ from app.core.provider_client import EventsProviderClient
 from app.database.engine import session_scope
 from app.repositories.events_repository import SqlAlchemyEventRepository
 from app.repositories.places_repository import SqlAlchemyPlaceRepository
+from app.repositories.sync_checkpoint import SqlAlchemySyncCheckpoint
 from app.repositories.sync_repository import SqlAlchemySyncRepository
 from app.usecases.sync_events import SyncEventsUsecase
 from app.workers.enums import WorkerLogMessage
@@ -22,12 +23,11 @@ class BackgroundSyncWorker:
 
     def start(self) -> None:
         self._task = asyncio.create_task(
-            self._loop(),
-            name="events-sync-worker"
+            self._loop(), name="events-sync-worker"
         )
-        logger.info(WorkerLogMessage.worker_started.format(
-            interval=self._interval
-        ))
+        logger.info(
+            WorkerLogMessage.worker_started.format(interval=self._interval)
+        )
 
     async def stop(self) -> None:
         if self._task is not None:
@@ -56,6 +56,7 @@ class BackgroundSyncWorker:
                         places=SqlAlchemyPlaceRepository(session),
                         events=SqlAlchemyEventRepository(session),
                         sync_state=SqlAlchemySyncRepository(session),
+                        checkpoint=SqlAlchemySyncCheckpoint(session),
                     )
                     await usecase.do()
             except Exception:

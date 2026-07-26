@@ -7,6 +7,7 @@ from app.domain.entities import Event, Place, SyncState
 from app.repositories.protocols import (
     EventRepository,
     PlaceRepository,
+    SyncCheckpoint,
     SyncRepository,
 )
 from app.usecases.enums import SyncLogMessage, SyncStatus
@@ -24,11 +25,13 @@ class SyncEventsUsecase:
         places: PlaceRepository,
         events: EventRepository,
         sync_state: SyncRepository,
+        checkpoint: SyncCheckpoint,
     ) -> None:
         self._client = client
         self._places = places
         self._events = events
         self._sync_state = sync_state
+        self._checkpoint = checkpoint
 
     async def do(self) -> SyncState:
         state = await self._sync_state.get_state()
@@ -47,22 +50,39 @@ class SyncEventsUsecase:
                 last_error=None,
             )
         )
-        logger.info(SyncLogMessage.started.format(change_at=query_date.isoformat()))
+        logger.info(
+            SyncLogMessage.started.format(change_at=query_date.isoformat())
+        )
 
         max_changed_at = last_changed_at
         number = 0
+        skipped = 0
         try:
             async for raw_event in EventsPaginator(
-                self._client,
-                changed_at=query_date
+                self._client, changed_at=query_date
             ):
-                event = _parse_event(raw_event)
-                await self._places.upsert(event.place)
-                await self._events.upsert(event)
+                try:
+                    async with self._checkpoint.savepoint():
+                        event = _parse_event(raw_event)
+                        await self._places.upsert(event.place)
+                        await self._events.upsert(event)
+                except Exception:
+                    skipped += 1
+                    logger.warning(
+                        SyncLogMessage.event_skipped.format(
+                            event_id=raw_event.get("id", "?")
+                        ),
+                        exc_info=True,
+                    )
+                    continue
+
                 if event.changed_at > max_changed_at:
                     max_changed_at = event.changed_at
                 number += 1
         except Exception as exception:
+            # Сюда попадают уже не проблемы с отдельной записью, а сбои
+            # уровня всего запуска — например, обрыв соединения с Events
+            # Provider API прямо во время постраничного обхода.
             logger.exception(SyncLogMessage.failed)
             failed_state = SyncState(
                 last_sync_time=state.last_sync_time,
@@ -73,11 +93,14 @@ class SyncEventsUsecase:
             await self._sync_state.save_state(failed_state)
             return failed_state
 
+        last_error = (
+            f"Пропущено событий из-за ошибок: {skipped}" if skipped else None
+        )
         final_state = SyncState(
             last_sync_time=started_at,
             last_changed_at=max_changed_at,
             sync_status=SyncStatus.success,
-            last_error=None,
+            last_error=last_error,
         )
         await self._sync_state.save_state(final_state)
         logger.info(SyncLogMessage.finished_ok.format(number=number))
@@ -98,7 +121,9 @@ def _parse_event(raw: dict) -> Event:
         name=raw["name"],
         place=place,
         event_time=datetime.datetime.fromisoformat(raw["event_time"]),
-        registration_deadline=datetime.datetime.fromisoformat(raw["registration_deadline"]),
+        registration_deadline=datetime.datetime.fromisoformat(
+            raw["registration_deadline"]
+        ),
         status=raw["status"],
         number_of_visitors=raw.get("number_of_visitors", 0),
         changed_at=datetime.datetime.fromisoformat(raw["changed_at"]),

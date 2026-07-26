@@ -8,6 +8,7 @@ from app.core.provider_client import EventsProviderClient
 from app.database.engine import get_session
 from app.repositories.events_repository import SqlAlchemyEventRepository
 from app.repositories.places_repository import SqlAlchemyPlaceRepository
+from app.repositories.sync_checkpoint import SqlAlchemySyncCheckpoint
 from app.repositories.sync_repository import SqlAlchemySyncRepository
 from app.repositories.tickets_repository import SqlAlchemyTicketRepository
 from app.usecases.cancel_ticket import CancelTicketUsecase
@@ -48,6 +49,12 @@ async def get_sync_repository(
     session: AsyncSession = Depends(get_session),
 ) -> AsyncIterator[SqlAlchemySyncRepository]:
     yield SqlAlchemySyncRepository(session)
+
+
+async def get_sync_checkpoint(
+    session: AsyncSession = Depends(get_session),
+) -> AsyncIterator[SqlAlchemySyncCheckpoint]:
+    yield SqlAlchemySyncCheckpoint(session)
 
 
 def get_events_usecase(
@@ -91,5 +98,6 @@ def get_sync_usecase(
     places: SqlAlchemyPlaceRepository = Depends(get_place_repository),
     events: SqlAlchemyEventRepository = Depends(get_event_repository),
     sync_state: SqlAlchemySyncRepository = Depends(get_sync_repository),
+    checkpoint: SqlAlchemySyncCheckpoint = Depends(get_sync_checkpoint),
 ) -> SyncEventsUsecase:
-    return SyncEventsUsecase(client, places, events, sync_state)
+    return SyncEventsUsecase(client, places, events, sync_state, checkpoint)
