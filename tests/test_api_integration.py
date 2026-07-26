@@ -24,20 +24,25 @@ RAW_EVENT = {
 
 
 async def _sync_one_event(
-    sync_repositories,
-    fake_provider_client: AsyncMock
+    sync_repositories, fake_provider_client: AsyncMock
 ) -> None:
     fake_provider_client.events.return_value = {
         "next": None,
         "previous": None,
         "results": [RAW_EVENT],
     }
-    async with sync_repositories() as (places, events, sync_state):
+    async with sync_repositories() as (
+        places,
+        events,
+        sync_state,
+        checkpoint,
+    ):
         usecase = SyncEventsUsecase(
             client=fake_provider_client,
             places=places,
             events=events,
-            sync_state=sync_state
+            sync_state=sync_state,
+            checkpoint=checkpoint,
         )
         state = await usecase.do()
     assert state.sync_status == "success"
@@ -58,9 +63,7 @@ async def test_sync_trigger_endpoint(api_client: AsyncClient) -> None:
 
 
 async def test_list_events_after_sync(
-    api_client,
-    sync_repositories,
-    fake_provider_client
+    api_client, sync_repositories, fake_provider_client
 ) -> None:
     await _sync_one_event(sync_repositories, fake_provider_client)
 
@@ -74,9 +77,7 @@ async def test_list_events_after_sync(
 
 
 async def test_get_event_detail(
-    api_client,
-    sync_repositories,
-    fake_provider_client
+    api_client, sync_repositories, fake_provider_client
 ) -> None:
     await _sync_one_event(sync_repositories, fake_provider_client)
 
@@ -140,8 +141,7 @@ async def test_create_and_cancel_ticket_flow(
     assert cancel_response.status_code == 200
     assert cancel_response.json() == {"success": True}
     fake_provider_client.cancel.assert_awaited_once_with(
-        "event-1",
-        "provider-ticket-1"
+        "event-1", "provider-ticket-1"
     )
 
 
@@ -166,7 +166,7 @@ async def test_create_ticket_seat_already_taken_maps_to_409(
 
 
 async def test_create_ticket_for_unknown_event_returns_404(
-    api_client: AsyncClient
+    api_client: AsyncClient,
 ) -> None:
     response = await api_client.post(
         "/api/tickets",
@@ -183,7 +183,7 @@ async def test_create_ticket_for_unknown_event_returns_404(
 
 
 async def test_cancel_unknown_ticket_returns_404(
-    api_client: AsyncClient
+    api_client: AsyncClient,
 ) -> None:
     response = await api_client.delete("/api/tickets/does-not-exist")
 

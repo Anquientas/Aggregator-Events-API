@@ -46,9 +46,7 @@ async def test_engine():
 @pytest_asyncio.fixture
 def session_factory(test_engine):
     return async_sessionmaker(
-        test_engine,
-        expire_on_commit=False,
-        class_=AsyncSession
+        test_engine, expire_on_commit=False, class_=AsyncSession
     )
 
 
@@ -58,7 +56,7 @@ def fake_provider_client() -> AsyncMock:
     client.events.return_value = {
         "next": None,
         "previous": None,
-        "results": []
+        "results": [],
     }
     return client
 
@@ -91,8 +89,7 @@ async def api_client(
     try:
         async with (
             AsyncClient(
-                transport=transport,
-                base_url="http://test"
+                transport=transport, base_url="http://test"
             ) as client,
             main_module.app.router.lifespan_context(main_module.app),
         ):
@@ -109,6 +106,7 @@ def sync_repositories(session_factory: async_sessionmaker[AsyncSession]):
     """
     from app.repositories.events_repository import SqlAlchemyEventRepository
     from app.repositories.places_repository import SqlAlchemyPlaceRepository
+    from app.repositories.sync_checkpoint import SqlAlchemySyncCheckpoint
     from app.repositories.sync_repository import SqlAlchemySyncRepository
 
     @asynccontextmanager
@@ -118,6 +116,7 @@ def sync_repositories(session_factory: async_sessionmaker[AsyncSession]):
                 SqlAlchemyPlaceRepository(session),
                 SqlAlchemyEventRepository(session),
                 SqlAlchemySyncRepository(session),
+                SqlAlchemySyncCheckpoint(session),
             )
             await session.commit()
 
