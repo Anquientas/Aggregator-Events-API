@@ -96,7 +96,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    name: Deploy over SSH
+    name: Deploy
     runs-on: ubuntu-latest
     needs: build-and-push
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -106,7 +106,7 @@ jobs:
           HTTP_CODE=$(curl -s -o response.txt -w "%{http_code}" -X POST \
             -H "Content-Type: application/json" \
             -H "X-API-Key: ${{ secrets.LMS_API_KEY }}" \
-            -d '{"image":"ghcr.io/${{ needs.build.outputs.repo }}:${{ github.sha }}","repository":"${{ github.repository }}"}' \
+            -d '{"image":"${{ needs.build-and-push.outputs.image }}:${{ github.sha }}","repository":"${{ github.repository }}"}' \
             https://lms.python-labs.ru/api/deploy-requests)
 
           if [ "$HTTP_CODE" != "200" ]; then
