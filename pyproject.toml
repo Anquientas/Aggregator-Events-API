@@ -41,6 +41,9 @@ target-version = "py313"
 src = ["app", "tests"]
 extend-exclude = ["alembic",]
 
+[tool.ruff.format]
+skip-magic-trailing-comma = false
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "C4"]
 ignore = ["B008", "UP046"]
