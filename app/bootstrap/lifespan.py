@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.bootstrap.enums import LifespanLogMessage
+from app.constants.lifespan import LifespanLogMessage
 from app.core.cache import TTLCache
 from app.core.capashino_client import CapashinoClient
 from app.core.provider_client import EventsProviderClient

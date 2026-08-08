@@ -8,8 +8,8 @@ class DatabaseSettings(BaseModel):
 
 
 class ProviderSeettings(BaseModel):
-    base_url: str = ""
-    api_key: str = ""
+    base_url: str = ''
+    api_key: str = ''
     timeout: float = 10.0
 
 
@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     OUTBOX_DISPATCH_INTERVAL: int = 30  # в секундах
     OUTBOX_MAX_ATTEMPTS: int = 5
     OUTBOX_LIMIT_ROWS: int = 50
+    GLITCHTIP_DSN: str = ''
 
 
     model_config = SettingsConfigDict(

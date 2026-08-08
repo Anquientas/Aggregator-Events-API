@@ -12,6 +12,7 @@ dependencies = [
     "pydantic[email]>=2.9",
     "pydantic-settings>=2.5",
     "alembic>=1.13",
+    "sentry-sdk>=2.66.1",
 ]
 
 [dependency-groups]
