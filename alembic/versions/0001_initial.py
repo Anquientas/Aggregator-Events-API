@@ -50,8 +50,6 @@ def upgrade() -> None:
     op.create_table(
         "tickets",
         sa.Column("id", sa.String(length=64), primary_key=True),
-        # Не unique: провайдер может вернуть тот же ticket_id повторно, если
-        # место освободилось (отмена) и было заново забронировано.
         sa.Column("provider_ticket_id", sa.String(length=64), nullable=False, index=True),
         sa.Column(
             "event_id",

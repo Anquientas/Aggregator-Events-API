@@ -2,7 +2,8 @@ import datetime
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.schemas.enums import HealthStatus, SyncTriggerStatus
+from app.constants.health import HealthStatus
+from app.constants.sync import SyncTriggerStatus
 
 
 class PlaceShort(BaseModel):

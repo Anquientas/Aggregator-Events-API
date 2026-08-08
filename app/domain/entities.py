@@ -1,5 +1,7 @@
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from app.constants.outbox import OutboxStatus
 
 
 @dataclass(slots=True)
@@ -41,3 +43,19 @@ class SyncState:
     last_changed_at: datetime.datetime | None
     sync_status: str
     last_error: str | None = None
+
+
+@dataclass(slots=True)
+class OutboxRecord:
+    id: str
+    event_type: str
+    payload: dict
+    status: str = OutboxStatus.pending
+    attempts_number: int = 0
+    created_at: datetime.datetime = field(
+        default_factory=lambda: datetime.datetime.now(datetime.UTC)
+    )
+    changed_at: datetime.datetime = field(
+        default_factory=lambda: datetime.datetime.now(datetime.UTC)
+    )
+    error: str | None = None

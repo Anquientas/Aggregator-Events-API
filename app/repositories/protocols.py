@@ -2,7 +2,7 @@ import datetime
 from contextlib import AbstractAsyncContextManager
 from typing import Protocol
 
-from app.domain.entities import Event, Place, SyncState, Ticket
+from app.domain.entities import Event, OutboxRecord, Place, SyncState, Ticket
 
 
 class PlaceRepository(Protocol):
@@ -44,3 +44,13 @@ class SyncCheckpoint(Protocol):
     """Изолирует изменения одного события от остальной части синхронизации."""
 
     def savepoint(self) -> AbstractAsyncContextManager[None]: ...
+
+
+class OutboxRepository(Protocol):
+    async def enqueue(self, record: OutboxRecord) -> None: ...
+
+    async def get_pending(self, limit: int) -> list[OutboxRecord]: ...
+
+    async def mark_sent(self, record_id: str) -> None: ...
+
+    async def mark_failed(self, record_id: str, error: str) -> None: ...

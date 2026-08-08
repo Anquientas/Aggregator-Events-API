@@ -1,8 +1,9 @@
 import datetime
 
-from app.core.exceptions import EventAlreadyOccurred, TicketNotFound
 from app.core.provider_client import EventsProviderClient
 from app.core.timeutils import ensure_utc
+from app.exceptions.event import EventAlreadyOccurred
+from app.exceptions.ticket import TicketNotFound
 from app.repositories.protocols import EventRepository, TicketRepository
 
 

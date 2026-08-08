@@ -1,10 +1,6 @@
 from enum import StrEnum
 
 
-class HealthResponseStatus(StrEnum):
-    ok = 'ok'
-
-
 class TicketErrorDetail(StrEnum):
     event_not_found = 'Событие не найдено'
     event_unexpected_status = (

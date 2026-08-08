@@ -4,8 +4,9 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from app.core.exceptions import EventsProviderError, SeatNotAvailable
 from app.core.provider_client import EventsProviderClient
+from app.exceptions.provider import EventsProviderError
+from app.exceptions.ticket import SeatNotAvailable
 
 
 def _make_response(

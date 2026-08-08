@@ -4,15 +4,14 @@ from app.api.dependencies import (
     get_cancel_ticket_usecase,
     get_create_ticket_usecase,
 )
-from app.api.enums import TicketErrorDetail
-from app.core.exceptions import (
+from app.constants.ticket import TicketErrorDetail
+from app.exceptions.event import (
     EventAlreadyOccurred,
     EventNotFound,
     EventUnexpectedStatus,
     RegistrationClosed,
-    SeatNotAvailable,
-    TicketNotFound,
 )
+from app.exceptions.ticket import SeatNotAvailable, TicketNotFound
 from app.schemas.api import (
     CancelTicketResponse,
     CreateTicketRequest,

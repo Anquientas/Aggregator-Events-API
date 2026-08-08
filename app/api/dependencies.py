@@ -7,6 +7,7 @@ from app.core.cache import TTLCache
 from app.core.provider_client import EventsProviderClient
 from app.database.engine import get_session
 from app.repositories.events_repository import SqlAlchemyEventRepository
+from app.repositories.outbox_repository import SqlAlchemyOutboxRepository
 from app.repositories.places_repository import SqlAlchemyPlaceRepository
 from app.repositories.sync_checkpoint import SqlAlchemySyncCheckpoint
 from app.repositories.sync_repository import SqlAlchemySyncRepository
@@ -45,6 +46,12 @@ async def get_ticket_repository(
     yield SqlAlchemyTicketRepository(session)
 
 
+async def get_outbox_repository(
+    session: AsyncSession = Depends(get_session),
+) -> AsyncIterator[SqlAlchemyOutboxRepository]:
+    yield SqlAlchemyOutboxRepository(session)
+
+
 async def get_sync_repository(
     session: AsyncSession = Depends(get_session),
 ) -> AsyncIterator[SqlAlchemySyncRepository]:
@@ -81,8 +88,9 @@ def get_create_ticket_usecase(
     client: EventsProviderClient = Depends(get_provider_client),
     events: SqlAlchemyEventRepository = Depends(get_event_repository),
     tickets: SqlAlchemyTicketRepository = Depends(get_ticket_repository),
+    outbox: SqlAlchemyOutboxRepository = Depends(get_outbox_repository),
 ) -> CreateTicketUsecase:
-    return CreateTicketUsecase(client, events, tickets)
+    return CreateTicketUsecase(client, events, tickets, outbox)
 
 
 def get_cancel_ticket_usecase(

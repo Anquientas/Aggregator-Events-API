@@ -1,17 +1,15 @@
 from enum import StrEnum
 
 
-class EventStatus(StrEnum):
-    new = 'new'
-    published = 'published'
-    cancelled = 'cancelled'
-
-
 class SyncStatus(StrEnum):
     idle = 'idle'
     running = 'running'
     success = 'success'
     failed = 'failed'
+
+
+class SyncTriggerStatus(StrEnum):
+    triggered = 'triggered'
 
 
 class SyncLogMessage(StrEnum):

@@ -1,8 +1,8 @@
+from app.constants.event import EventStatus
 from app.core.cache import TTLCache
-from app.core.exceptions import EventNotFound, EventUnexpectedStatus
 from app.core.provider_client import EventsProviderClient
+from app.exceptions.event import EventNotFound, EventUnexpectedStatus
 from app.repositories.protocols import EventRepository
-from app.usecases.enums import EventStatus
 
 
 class GetSeatsUsecase:

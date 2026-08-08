@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import logging
 
+from app.constants.worker import WorkerLogMessage
 from app.core.provider_client import EventsProviderClient
 from app.database.engine import session_scope
 from app.repositories.events_repository import SqlAlchemyEventRepository
@@ -9,7 +10,6 @@ from app.repositories.places_repository import SqlAlchemyPlaceRepository
 from app.repositories.sync_checkpoint import SqlAlchemySyncCheckpoint
 from app.repositories.sync_repository import SqlAlchemySyncRepository
 from app.usecases.sync_events import SyncEventsUsecase
-from app.workers.enums import WorkerLogMessage
 
 logger = logging.getLogger(__name__)
 

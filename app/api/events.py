@@ -7,9 +7,9 @@ from app.api.dependencies import (
     get_events_usecase,
     get_seats_usecase,
 )
-from app.api.enums import EventErrorDetail
-from app.core.exceptions import EventNotFound, EventUnexpectedStatus
+from app.constants.ticket import EventErrorDetail
 from app.domain.entities import Event
+from app.exceptions.event import EventNotFound, EventUnexpectedStatus
 from app.schemas.api import (
     EventDetail,
     EventListItem,

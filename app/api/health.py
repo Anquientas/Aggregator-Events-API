@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.enums import HealthResponseStatus
+from app.constants.health import HealthResponseStatus
 from app.schemas.api import HealthResponse
 
 router = APIRouter(tags=["health"])

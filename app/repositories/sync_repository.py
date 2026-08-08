@@ -1,9 +1,9 @@
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants.sync import SyncStatus
 from app.database import models
 from app.domain.entities import SyncState
-from app.repositories.enums import SyncStatus
 
 _STATE_ROW_ID = 1
 

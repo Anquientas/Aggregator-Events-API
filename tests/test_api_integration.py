@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 from httpx import AsyncClient
 
-from app.core.exceptions import SeatNotAvailable
+from app.exceptions.ticket import SeatNotAvailable
 from app.usecases.sync_events import SyncEventsUsecase
 
 RAW_EVENT = {

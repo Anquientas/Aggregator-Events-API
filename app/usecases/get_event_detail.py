@@ -1,5 +1,5 @@
-from app.core.exceptions import EventNotFound
 from app.domain.entities import Event
+from app.exceptions.event import EventNotFound
 from app.repositories.protocols import EventRepository
 
 

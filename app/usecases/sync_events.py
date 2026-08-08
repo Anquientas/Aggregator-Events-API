@@ -1,6 +1,7 @@
 import datetime
 import logging
 
+from app.constants.sync import SyncLogMessage, SyncStatus
 from app.core.paginator import EventsPaginator
 from app.core.provider_client import EventsProviderClient
 from app.domain.entities import Event, Place, SyncState
@@ -10,7 +11,6 @@ from app.repositories.protocols import (
     SyncCheckpoint,
     SyncRepository,
 )
-from app.usecases.enums import SyncLogMessage, SyncStatus
 
 logger = logging.getLogger(__name__)
 

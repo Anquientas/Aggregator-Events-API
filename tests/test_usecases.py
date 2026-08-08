@@ -3,20 +3,19 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from app.constants.event import EventStatus
 from app.core.cache import TTLCache
-from app.core.exceptions import (
+from app.core.provider_client import EventsProviderClient
+from app.domain.entities import Event, Place, Ticket
+from app.exceptions.event import (
     EventAlreadyOccurred,
     EventNotFound,
     EventUnexpectedStatus,
     RegistrationClosed,
-    SeatNotAvailable,
-    TicketNotFound,
 )
-from app.core.provider_client import EventsProviderClient
-from app.domain.entities import Event, Place, Ticket
+from app.exceptions.ticket import SeatNotAvailable, TicketNotFound
 from app.usecases.cancel_ticket import CancelTicketUsecase
 from app.usecases.create_ticket import CreateTicketUsecase
-from app.usecases.enums import EventStatus
 from app.usecases.get_seats import GetSeatsUsecase
 
 
@@ -55,6 +54,14 @@ class FakeTicketRepository:
             self.tickets[ticket_id].cancelled = True
 
 
+class FakeOutboxRepository:
+    def __init__(self):
+        self.records = []
+
+    async def enqueue(self, record):
+        self.records.append(record)
+
+
 def _make_event(status: str = EventStatus.published) -> Event:
     return Event(
         id="event-1",
@@ -86,7 +93,8 @@ async def test_create_ticket_registers_and_persists() -> None:
     usecase = CreateTicketUsecase(
         client=client,
         events=events,
-        tickets=tickets
+        tickets=tickets,
+        outbox=FakeOutboxRepository()
     )
     ticket = await usecase.do(
         event_id="event-1",
@@ -116,7 +124,8 @@ async def test_create_ticket_raises_when_event_missing() -> None:
     usecase = CreateTicketUsecase(
         client=client,
         events=events,
-        tickets=tickets
+        tickets=tickets,
+        outbox=FakeOutboxRepository()
     )
 
     with pytest.raises(EventNotFound):
@@ -140,7 +149,8 @@ async def test_create_ticket_raises_when_event_not_published() -> None:
     usecase = CreateTicketUsecase(
         client=client,
         events=events,
-        tickets=tickets
+        tickets=tickets,
+        outbox=FakeOutboxRepository()
     )
 
     with pytest.raises(EventUnexpectedStatus):
@@ -225,7 +235,8 @@ async def test_raises_when_registration_deadline_passed() -> None:
     usecase = CreateTicketUsecase(
         client=client,
         events=events,
-        tickets=tickets
+        tickets=tickets,
+        outbox=FakeOutboxRepository()
     )
 
     with pytest.raises(RegistrationClosed):
@@ -248,7 +259,8 @@ async def test_raises_seat_not_available_when_provider_rejects() -> None:
     usecase = CreateTicketUsecase(
         client=client,
         events=events,
-        tickets=tickets
+        tickets=tickets,
+        outbox=FakeOutboxRepository()
     )
 
     with pytest.raises(SeatNotAvailable):

@@ -5,8 +5,9 @@ from typing import Any, TypedDict
 
 import httpx
 
-from app.core.enums import ProviderLogMessage
-from app.core.exceptions import EventsProviderError, SeatNotAvailable
+from app.constants.provider import ProviderLogMessage
+from app.exceptions.provider import EventsProviderError
+from app.exceptions.ticket import SeatNotAvailable
 
 logger = logging.getLogger(__name__)
 
