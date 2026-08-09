@@ -16,3 +16,13 @@ class OutboxLogMessage(StrEnum):
         'Неучтенная ошибка в фоновом воркере отправки уведомлений:'
         ' {exception}'
     )
+    unexpected_record_error = (
+        'Неучтенная ошибка при обработке записи outbox с id {record_id}:'
+        ' {exception}'
+    )
+
+
+class OutboxErrorMessage(StrEnum):
+    attempts_exceeded = (
+        'Превышено число попыток отправки ({attempts_number})'
+    )
