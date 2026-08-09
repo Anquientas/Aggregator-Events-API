@@ -30,7 +30,17 @@ router = APIRouter(prefix="/api/tickets", tags=["tickets"])
 @router.post(
     "",
     response_model=CreateTicketResponse,
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        404: {"description": "Событие не найдено"},
+        409: {"description": (
+            "Один из случаев конфликта: событие не в статусе "
+            "published; дедлайн регистрации уже прошёл; выбранное "
+            "место занято; либо idempotency_key уже был использован "
+            "ранее с другими данными запроса (event_id/seat/email/"
+            "first_name/last_name)."
+        )}
+    }
 )
 async def create_ticket(
     payload: CreateTicketRequest,

@@ -55,7 +55,19 @@ class CreateTicketRequest(BaseModel):
     last_name: str = Field(min_length=1, max_length=255)
     email: EmailStr
     seat: str = Field(min_length=1, max_length=32)
-    idempotency_key: str | None = Field(default=None, max_length=128)
+    idempotency_key: str | None = Field(
+        default=None,
+        max_length=128,
+        description=(
+            "Необязательный ключ идемпотентности для повторных запросов "
+            "(двойной клик, retry на клиенте). Повторный запрос с тем же "
+            "ключом и теми же данными (event_id, seat, email, first_name, "
+            "last_name) вернёт 201 с тем же ticket_id, не создавая новый "
+            "билет и не обращаясь повторно к Events Provider. Запрос с "
+            "тем же ключом, но другими данными — 409 Conflict. Без ключа "
+            "каждый запрос всегда обрабатывается как новый."
+        ),
+    )
 
 
 class CreateTicketResponse(BaseModel):
