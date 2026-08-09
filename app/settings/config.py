@@ -58,7 +58,7 @@ class Settings(BaseSettings):
 
     @property
     def provider(self) -> ProviderSeettings:
-        return DatabaseSettings(
+        return ProviderSeettings(
             base_url=self.EVENTS_PROVIDER_BASE_URL,
             api_key=self.EVENTS_PROVIDER_API_KEY,
             timeout=self.EVENTS_PROVIDER_TIMEOUT

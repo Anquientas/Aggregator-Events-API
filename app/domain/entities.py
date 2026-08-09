@@ -35,6 +35,7 @@ class Ticket:
     email: str
     seat: str
     cancelled: bool = False
+    idempotency_key: str | None = None
 
 
 @dataclass(slots=True)

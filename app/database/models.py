@@ -79,6 +79,11 @@ class Ticket(Base):
         DateTime(timezone=True),
         default=lambda: datetime.datetime.now(datetime.UTC)
     )
+    idempotency_key: Mapped[str | None] = mapped_column(
+        String(128),
+        nullable=True,
+        unique=True
+    )
 
     event: Mapped[Event] = relationship(back_populates="tickets")
 

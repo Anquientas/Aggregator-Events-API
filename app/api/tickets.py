@@ -11,7 +11,11 @@ from app.exceptions.event import (
     EventUnexpectedStatus,
     RegistrationClosed,
 )
-from app.exceptions.ticket import SeatNotAvailable, TicketNotFound
+from app.exceptions.ticket import (
+    IdempotencyKeyConflict,
+    SeatNotAvailable,
+    TicketNotFound,
+)
 from app.schemas.api import (
     CancelTicketResponse,
     CreateTicketRequest,
@@ -55,6 +59,13 @@ async def create_ticket(
     except SeatNotAvailable as exception:
         raise HTTPException(
             status_code=409, detail=TicketErrorDetail.seat_not_available
+        ) from exception
+    except IdempotencyKeyConflict as exception:
+        raise HTTPException(
+            status_code=409,
+            detail=TicketErrorDetail.idempotency_key_conflict.format(
+                idempotency_key=ticket.idempotency_key
+            ),
         ) from exception
     return CreateTicketResponse(ticket_id=ticket.id)
 
