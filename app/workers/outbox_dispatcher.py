@@ -1,11 +1,15 @@
 import asyncio
 import contextlib
+import logging
 
+from app.constants.outbox import OutboxLogMessage
 from app.core.capashino_client import CapashinoClient
 from app.database.engine import session_scope
 from app.exceptions.capashino import CapashinoError, CapashinoTemporaryError
 from app.repositories.outbox_repository import SqlAlchemyOutboxRepository
 from app.settings.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class OutboxDispatcher:
@@ -38,24 +42,33 @@ class OutboxDispatcher:
             await asyncio.sleep(self._interval)
 
     async def _run_once(self) -> None:
-        async with session_scope() as session:
-            outbox = SqlAlchemyOutboxRepository(session)
-            for record in await outbox.get_pending(
-                limit=settings.OUTBOX_LIMIT_ROWS
-            ):
-                if record.attempts >= self._max_attempts:
-                    continue
-                try:
-                    await self._client.send_notification(record.payload)
-                except CapashinoTemporaryError as exception:
-                    await outbox.mark_failed(
-                        record_id=record.id,
-                        error=str(exception)
-                    )
-                except CapashinoError as exception:
-                    await outbox.mark_permanently_failed(
-                        record_id=record.id,
-                        error=str(exception)
-                    )
-                else:
-                    await outbox.mark_sent(record.id)
+        try:
+            async with session_scope() as session:
+                outbox = SqlAlchemyOutboxRepository(session)
+                for record in await outbox.get_pending(
+                    limit=settings.OUTBOX_LIMIT_ROWS
+                ):
+                    if record.attempts_number >= self._max_attempts:
+                        continue
+                    try:
+                        await self._client.send_notification(
+                            record.payload
+                        )
+                    except CapashinoTemporaryError as exception:
+                        await outbox.mark_failed(
+                            record_id=record.id,
+                            error=str(exception)
+                        )
+                    except CapashinoError as exception:
+                        await outbox.mark_permanently_failed(
+                            record_id=record.id,
+                            error=str(exception)
+                        )
+                    else:
+                        await outbox.mark_sent(record.id)
+        except Exception as exception:
+            logger.exception(
+                OutboxLogMessage.unexpected_dispatcher_error.format(
+                    exception=exception
+                )
+            )

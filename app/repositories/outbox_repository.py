@@ -53,7 +53,7 @@ class SqlAlchemyOutboxRepository:
     async def mark_failed(self, record_id: str, error: str) -> None:
         row = await self._session.get(models.Outbox, record_id)
         if row is not None:
-            row.attempts += 1
+            row.attempts_number += 1
             row.error = error[:2000]
 
     async def mark_permanently_failed(
@@ -64,5 +64,5 @@ class SqlAlchemyOutboxRepository:
         row = await self._session.get(models.Outbox, record_id)
         if row is not None:
             row.status = OutboxStatus.failed
-            row.attempts += 1
-            row.last_error = error[:2000]
+            row.attempts_number += 1
+            row.error = error[:2000]
