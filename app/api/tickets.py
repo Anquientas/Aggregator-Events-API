@@ -43,6 +43,7 @@ async def create_ticket(
             last_name=payload.last_name,
             email=payload.email,
             seat=payload.seat,
+            idempotency_key=payload.idempotency_key
         )
     except EventNotFound as exception:
         raise HTTPException(
@@ -64,7 +65,7 @@ async def create_ticket(
         raise HTTPException(
             status_code=409,
             detail=TicketErrorDetail.idempotency_key_conflict.format(
-                idempotency_key=ticket.idempotency_key
+                idempotency_key=payload.idempotency_key
             ),
         ) from exception
     return CreateTicketResponse(ticket_id=ticket.id)
