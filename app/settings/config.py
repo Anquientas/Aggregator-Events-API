@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     OUTBOX_DISPATCH_INTERVAL: int = 30  # в секундах
     OUTBOX_MAX_ATTEMPTS: int = 5
     OUTBOX_LIMIT_ROWS: int = 50
-    GLITCHTIP_DSN: str = ''
+    SENTRY_DSN: str = ''
 
 
     model_config = SettingsConfigDict(

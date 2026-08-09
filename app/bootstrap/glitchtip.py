@@ -6,10 +6,10 @@ from app.settings.config import settings
 
 
 def setup_glitchtip() -> None:
-    if not settings.GLITCHTIP_DSN:
+    if not settings.SENTRY_DSN:
         return
 
     sentry_sdk.init(
-        dsn=settings.GLITCHTIP_DSN,
+        dsn=settings.SENTRY_DSN,
         integrations=[StarletteIntegration(), FastApiIntegration()],
     )
