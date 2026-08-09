@@ -8,9 +8,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from app.database.engine import Base
 from app.database.models import (  # noqa: F401 — регистрируют модели в Base.metadata
     Event,
+    Outbox,
     Place,
     SyncMetadata,
-    Ticket,
+    Ticket
 )
 from app.settings.config import settings
 
@@ -25,7 +26,7 @@ target_metadata = Base.metadata
 
 # URL базы данных берём из настроек приложения (единый источник правды,
 # см. app/settings/config.py), а не дублируем его в alembic.ini
-config.set_main_option("sqlalchemy.url", settings.database_url)
+config.set_main_option("sqlalchemy.url", settings.database.url)
 
 
 def run_migrations_offline() -> None:
