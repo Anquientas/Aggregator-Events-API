@@ -1,5 +1,6 @@
 import httpx
 
+from app.constants.capashino import CapashinoErrorMessages
 from app.exceptions.capashino import CapashinoError, CapashinoTemporaryError
 
 
@@ -16,18 +17,32 @@ class CapashinoClient:
         )
 
     async def send_notification(self, payload: dict) -> bool:
-        response = await self._http.post('/api/notifications', json=payload)
+        try:
+            response = await self._http.post(
+                '/api/notifications',
+                json=payload
+            )
+        except httpx.HTTPError as exception:
+            raise CapashinoTemporaryError(
+                message=CapashinoErrorMessages.network_error.format(
+                    exception=exception
+                )
+            ) from exception
 
         if response.status_code in (201, 409):
             return True
 
         if response.status_code in (400, 401, 422):
             raise CapashinoError(
-                message=f'Capashino отклонил запрос: {response.status_code}',
+                message=CapashinoErrorMessages.reject.format(
+                    status_code=response.status_code
+                ),
                 status_code=response.status_code
             )
 
         raise CapashinoTemporaryError(
-            message=f'Capashino не доступен: {response.status_code}',
+            message=CapashinoErrorMessages.unavailable.format(
+                status_code=response.status_code
+            ),
             status_code=response.status_code
         )
