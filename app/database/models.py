@@ -5,6 +5,7 @@ from sqlalchemy import DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import JSON, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.constants.event import EventStatus
 from app.constants.outbox import OutboxStatus, OutboxTypes
 from app.constants.sync import SyncStatus
 from app.database.engine import Base
@@ -43,7 +44,7 @@ class Event(Base):
     registration_deadline: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True)
     )
-    status: Mapped[str] = mapped_column(String(32))
+    status: Mapped[EventStatus] = mapped_column(String(32))
     number_of_visitors: Mapped[int] = mapped_column(
         Integer,
         default=0
@@ -104,7 +105,7 @@ class SyncMetadata(Base):
         DateTime(timezone=True),
         nullable=True
     )
-    sync_status: Mapped[str] = mapped_column(
+    sync_status: Mapped[SyncStatus] = mapped_column(
         String(32),
         default=SyncStatus.idle.value
     )
@@ -128,7 +129,7 @@ class Outbox(Base):
     payload: Mapped[dict] = mapped_column(
         JSON().with_variant(JSONB(), 'postgresql')
     )
-    status: Mapped[str] = mapped_column(
+    status: Mapped[OutboxStatus] = mapped_column(
         String(16),
         default=OutboxStatus.pending
     )

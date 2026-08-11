@@ -1,7 +1,9 @@
 import datetime
 from dataclasses import dataclass, field
 
+from app.constants.event import EventStatus
 from app.constants.outbox import OutboxStatus
+from app.constants.sync import SyncStatus
 
 
 @dataclass(slots=True)
@@ -20,7 +22,7 @@ class Event:
     place: Place
     event_time: datetime.datetime
     registration_deadline: datetime.datetime
-    status: str
+    status: EventStatus
     number_of_visitors: int
     changed_at: datetime.datetime
 
@@ -42,7 +44,7 @@ class Ticket:
 class SyncState:
     last_sync_time: datetime.datetime | None
     last_changed_at: datetime.datetime | None
-    sync_status: str
+    sync_status: SyncStatus
     last_error: str | None = None
 
 

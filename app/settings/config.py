@@ -37,7 +37,6 @@ class Settings(BaseSettings):
     OUTBOX_LIMIT_ROWS: int = 50
     SENTRY_DSN: str = ''
 
-
     model_config = SettingsConfigDict(
         env_file='.env',
         env_prefix='',
