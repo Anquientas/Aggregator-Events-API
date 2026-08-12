@@ -22,7 +22,7 @@ class Event:
     place: Place
     event_time: datetime.datetime
     registration_deadline: datetime.datetime
-    status: EventStatus
+    status: str
     number_of_visitors: int
     changed_at: datetime.datetime
 

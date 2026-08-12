@@ -2,9 +2,9 @@ import datetime
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.constants.event import EventStatus
 from app.constants.health import HealthStatus
 from app.constants.sync import SyncTriggerStatus
+from app.constants.event import EventStatus
 
 
 class PlaceShort(BaseModel):
@@ -24,7 +24,7 @@ class EventListItem(BaseModel):
     place: PlaceShort
     event_time: datetime.datetime
     registration_deadline: datetime.datetime
-    status: EventStatus
+    status: str
     number_of_visitors: int
 
 
@@ -34,7 +34,7 @@ class EventDetail(BaseModel):
     place: PlaceDetail
     event_time: datetime.datetime
     registration_deadline: datetime.datetime
-    status: EventStatus
+    status: str
     number_of_visitors: int
 
 
