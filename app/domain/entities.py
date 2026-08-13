@@ -1,7 +1,6 @@
 import datetime
 from dataclasses import dataclass, field
 
-from app.constants.event import EventStatus
 from app.constants.outbox import OutboxStatus
 from app.constants.sync import SyncStatus
 

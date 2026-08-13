@@ -4,7 +4,6 @@ from pydantic import BaseModel, EmailStr, Field
 
 from app.constants.health import HealthStatus
 from app.constants.sync import SyncTriggerStatus
-from app.constants.event import EventStatus
 
 
 class PlaceShort(BaseModel):
