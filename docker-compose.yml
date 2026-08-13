@@ -1,6 +1,6 @@
 services:
   database:
-    container_name: "${POSTGRES_DATABASE_CONTAINER_NAME}"
+    container_name: "${DATABASE_POSTGRES_CONTAINER_NAME}"
     image: postgres:13.10
     restart: always
     environment:
@@ -20,9 +20,9 @@ services:
       retries: 10
 
   backend:
-    image: ghcr.io/OWNER/events-aggregator:latest
+    # image: ghcr.io/OWNER/events-aggregator:latest
     build: .
-    pull_policy: always
+    # pull_policy: always
     container_name: "${EVENTS_AGGREGATOR_CONTAINER_NAME}"
     restart: always
     environment:
@@ -36,6 +36,12 @@ services:
       WORKER_SYNC_INTERVAL: ${WORKER_SYNC_INTERVAL:-86400}
       SEATS_CACHE_TIMEOUT: ${SEATS_CACHE_TIMEOUT:-30}
       DEFAULT_PAGE_SIZE: ${DEFAULT_PAGE_SIZE:-20}
+      CAPASHINO_BASE_URL: ${CAPASHINO_BASE_URL}
+      CAPASHINO_API_KEY: ${CAPASHINO_API_KEY}
+      OUTBOX_DISPATCH_INTERVAL: ${OUTBOX_DISPATCH_INTERVAL:-30}
+      OUTBOX_MAX_ATTEMPTS: ${OUTBOX_MAX_ATTEMPTS:-5}
+      OUTBOX_LIMIT_ROWS: ${OUTBOX_LIMIT_ROWS:-50}
+      SENTRY_DSN: ${SENTRY_DSN}
     ports:
       - "${EVENTS_AGGREGATOR_PORT}:8000"
     networks:
@@ -45,10 +51,40 @@ services:
         condition: service_healthy
     command: >
       sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+  
+  prometheus:
+    container_name: "${METRIC_PROMETHEUS_CONTAINER_NAME}"
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    networks:
+      - custom_network
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+  
+  grafana:
+    container_name: "${METRIC_GRAFANA_CONTAINER_NAME}"
+    image: grafana/grafana:latest
+    ports:
+      - "9091:3000"
+    networks:
+      - custom_network
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
 
 volumes:
   events_aggregator_data:
-    name: ${POSTGRES_DATABASE_VOLUME_NAME}
+    name: ${DATABASE_POSTGRES_VOLUME_NAME}
+  prometheus-data:
+    name: ${METRIC_PROMETHEUS_VOLUME_NAME}
+  grafana-data:
+    name: ${METRIC_GRAFANA_VOLUME_NAME}
 
 networks:
   custom_network:
