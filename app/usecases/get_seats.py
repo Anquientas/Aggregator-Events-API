@@ -1,5 +1,6 @@
 from app.constants.event import EventStatus
 from app.core.cache import TTLCache
+from app.core.metrics import CACHE_HITS_TOTAL, CACHE_MISSES_TOTAL
 from app.core.provider_client import EventsProviderClient
 from app.exceptions.event import EventNotFound, EventUnexpectedStatus
 from app.repositories.protocols import EventRepository
@@ -19,7 +20,9 @@ class GetSeatsUsecase:
     async def do(self, event_id: str) -> list[str]:
         cached = self._cache.get(event_id)
         if cached is not None:
+            CACHE_HITS_TOTAL.inc()
             return cached
+        CACHE_MISSES_TOTAL.inc()
 
         event = await self._events.get(event_id)
         if event is None:

@@ -20,9 +20,9 @@ services:
       retries: 10
 
   backend:
-    # image: ghcr.io/OWNER/events-aggregator:latest
+    image: ghcr.io/OWNER/events-aggregator:latest
     build: .
-    # pull_policy: always
+    pull_policy: always
     container_name: "${EVENTS_AGGREGATOR_CONTAINER_NAME}"
     restart: always
     environment:

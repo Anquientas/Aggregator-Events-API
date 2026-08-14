@@ -1,6 +1,6 @@
 [project]
 name = "events-aggregator"
-version = "0.1.0"
+version = "0.1.1"
 description = "Агрегатор событий: синхронизация с Events Provider API, локальное хранение и регистрация на мероприятия"
 requires-python = ">=3.11"
 dependencies = [
@@ -13,6 +13,7 @@ dependencies = [
     "pydantic-settings>=2.5",
     "alembic>=1.13",
     "sentry-sdk>=2.66.1",
+    "prometheus-client>=0.26.0",
 ]
 
 [dependency-groups]

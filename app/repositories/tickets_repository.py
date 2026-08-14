@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -69,3 +69,15 @@ class SqlAlchemyTicketRepository:
         )
         row = (await self._session.execute(statement)).scalar_one_or_none()
         return _to_domain(row) if row else None
+
+    async def count(self) -> int:
+        statement = select(func.count()).select_from(models.Ticket)
+        return (await self._session.execute(statement)).scalar_one()
+
+    async def count_cancelled(self) -> int:
+        statement = (
+            select(func.count())
+            .select_from(models.Ticket)
+            .where(models.Ticket.cancelled.is_(True))
+        )
+        return (await self._session.execute(statement)).scalar_one()

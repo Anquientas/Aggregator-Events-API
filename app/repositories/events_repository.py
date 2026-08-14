@@ -101,3 +101,7 @@ class SqlAlchemyEventRepository:
                 0,
                 event.number_of_visitors + delta
             )
+
+    async def count(self) -> int:
+        statement = select(func.count()).select_from(models.Event)
+        return (await self._session.execute(statement)).scalar_one()

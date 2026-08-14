@@ -1,11 +1,16 @@
 import asyncio
 import datetime
 import logging
+import time
 from typing import Any, TypedDict
 
 import httpx
 
 from app.constants.provider import ProviderLogMessage
+from app.core.metrics import (
+    EVENTS_PROVIDER_REQUEST_DURATION_SECONDS,
+    EVENTS_PROVIDER_REQUESTS_TOTAL,
+)
 from app.exceptions.provider import EventsProviderError
 from app.exceptions.ticket import SeatNotAvailable
 
@@ -52,19 +57,23 @@ class EventsProviderClient:
         next_url: str | None = None,
     ) -> EventsPage:
         if next_url:
-            response = await self._request("GET", next_url)
+            response = await self._request(
+                "GET", next_url, endpoint="/events"
+            )
             return response
 
         params: dict[str, str] = {}
         if changed_at is not None:
             params["changed_at"] = changed_at.strftime("%Y-%m-%d")
 
-        response = await self._request("GET", "/api/events/", params=params)
+        response = await self._request(
+            "GET", "/api/events/", endpoint="/events", params=params
+        )
         return response
 
     async def seats(self, event_id: str) -> list[str]:
         response = await self._request(
-            "GET", f"/api/events/{event_id}/seats/"
+            "GET", f"/api/events/{event_id}/seats/", endpoint="/seats"
         )
         return response["seats"]
 
@@ -84,7 +93,10 @@ class EventsProviderClient:
         }
         try:
             response = await self._request(
-                "POST", f"/api/events/{event_id}/register/", json=payload
+                "POST",
+                f"/api/events/{event_id}/register/",
+                endpoint="/registration",
+                json=payload,
             )
         except EventsProviderError as exception:
             if exception.status_code == 400:
@@ -95,7 +107,10 @@ class EventsProviderClient:
     async def cancel(self, event_id: str, ticket_id: str) -> bool:
         payload = {"ticket_id": ticket_id}
         response = await self._request(
-            "DELETE", f"/api/events/{event_id}/unregister/", json=payload
+            "DELETE",
+            f"/api/events/{event_id}/unregister/",
+            endpoint="/unregister",
+            json=payload,
         )
         return bool(response.get("success", True))
 
@@ -103,11 +118,13 @@ class EventsProviderClient:
         self,
         method: str,
         url: str,
+        endpoint: str,
         params: dict[str, str] | None = None,
         json: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         attempt = 0
         while True:
+            start_time = time.monotonic()
             try:
                 response = await self._http.request(
                     method,
@@ -116,11 +133,24 @@ class EventsProviderClient:
                     json=json
                 )
             except httpx.HTTPError as exception:
+                EVENTS_PROVIDER_REQUEST_DURATION_SECONDS.labels(
+                    endpoint=endpoint
+                ).observe(time.monotonic() - start_time)
+                EVENTS_PROVIDER_REQUESTS_TOTAL.labels(
+                    endpoint=endpoint, status="error"
+                ).inc()
                 raise EventsProviderError(
                     ProviderLogMessage.connection_error.format(
                         error=exception
                     )
                 ) from exception
+
+            EVENTS_PROVIDER_REQUEST_DURATION_SECONDS.labels(
+                endpoint=endpoint
+            ).observe(time.monotonic() - start_time)
+            EVENTS_PROVIDER_REQUESTS_TOTAL.labels(
+                endpoint=endpoint, status=str(response.status_code)
+            ).inc()
 
             if (
                 response.status_code == 429
