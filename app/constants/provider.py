@@ -12,6 +12,6 @@ class ProviderLogMessage(StrEnum):
         ' для {method} {url}: {body}'
     )
     rate_limited_retry = (
-        'Events Provider вернул ошибку 429 для {method} {url},'
-        ' повтор через {interval:.1f} сек'
+        'Events Provider вернул ошибку 429 для %(method)s %(url)s,'
+        ' повтор через %(interval).1f сек'
     )

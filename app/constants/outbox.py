@@ -14,11 +14,11 @@ class OutboxStatus(StrEnum):
 class OutboxLogMessage(StrEnum):
     unexpected_dispatcher_error = (
         'Неучтенная ошибка в фоновом воркере отправки уведомлений:'
-        ' {exception}'
+        ' %(exception)s'
     )
     unexpected_record_error = (
-        'Неучтенная ошибка при обработке записи outbox с id {record_id}:'
-        ' {exception}'
+        'Неучтенная ошибка при обработке записи outbox с id %(record_id)s:'
+        ' %(exception)s'
     )
 
 

@@ -26,7 +26,8 @@ class BackgroundSyncWorker:
             self._loop(), name="events-sync-worker"
         )
         logger.info(
-            WorkerLogMessage.worker_started.format(interval=self._interval)
+            WorkerLogMessage.worker_started,
+            {'interval': self._interval}
         )
 
     async def stop(self) -> None:

@@ -158,9 +158,12 @@ class EventsProviderClient:
             ):
                 retry_after = float(response.headers.get("Retry-After", "1"))
                 logger.warning(
-                    ProviderLogMessage.rate_limited_retry.format(
-                        method=method, url=url, interval=retry_after
-                    )
+                    ProviderLogMessage.rate_limited_retry,
+                    {
+                        'method': method,
+                        'url': url,
+                        'interval': retry_after
+                    }
                 )
                 await asyncio.sleep(retry_after)
                 attempt += 1

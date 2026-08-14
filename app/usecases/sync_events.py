@@ -51,7 +51,8 @@ class SyncEventsUsecase:
             )
         )
         logger.info(
-            SyncLogMessage.started.format(change_at=query_date.isoformat())
+            SyncLogMessage.started,
+            {'change_at': query_date.isoformat()}
         )
 
         max_changed_at = last_changed_at
@@ -69,9 +70,8 @@ class SyncEventsUsecase:
                 except Exception:
                     skipped += 1
                     logger.warning(
-                        SyncLogMessage.event_skipped.format(
-                            event_id=raw_event.get("id", "?")
-                        ),
+                        SyncLogMessage.event_skipped,
+                        {'event_id': raw_event.get('id', '?')},
                         exc_info=True,
                     )
                     continue
@@ -94,7 +94,7 @@ class SyncEventsUsecase:
             return failed_state
 
         last_error = (
-            f"Пропущено событий из-за ошибок: {skipped}" if skipped else None
+            f'Пропущено событий из-за ошибок: {skipped}' if skipped else None
         )
         final_state = SyncState(
             last_sync_time=started_at,
@@ -103,7 +103,10 @@ class SyncEventsUsecase:
             last_error=last_error,
         )
         await self._sync_state.save_state(final_state)
-        logger.info(SyncLogMessage.finished_ok.format(number=number))
+        logger.info(
+            SyncLogMessage.finished_ok,
+            {'number': str(number)}
+        )
         return final_state
 
 

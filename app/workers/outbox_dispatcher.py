@@ -82,13 +82,14 @@ class OutboxDispatcher:
                                 await outbox.mark_sent(record.id)
                     except Exception as exception:
                         logger.exception(
-                            OutboxLogMessage.unexpected_record_error.format(
-                                record_id=record.id, exception=exception
-                            )
+                            OutboxLogMessage.unexpected_record_error,
+                            {
+                                'record_id': record.id,
+                                'exception': exception
+                            }
                         )
         except Exception as exception:
             logger.exception(
-                OutboxLogMessage.unexpected_dispatcher_error.format(
-                    exception=exception
-                )
+                OutboxLogMessage.unexpected_dispatcher_error,
+                {'exception': exception}
             )

@@ -13,8 +13,11 @@ class SyncTriggerStatus(StrEnum):
 
 
 class SyncLogMessage(StrEnum):
-    started = 'Синхронизация запущена, changed_at={change_at}'
+    started = 'Синхронизация запущена, changed_at=%(change_at)s'
     finished_ok = (
-        'Синхронизация завершена успешно, обработано событий: {number}'
+        'Синхронизация завершена успешно, обработано событий: %(number)s'
     )
     failed = 'Синхронизация завершилась с ошибкой'
+    event_skipped = (
+        'Событие %(event_id)s пропущено из-за ошибки при сохранении'
+    )
