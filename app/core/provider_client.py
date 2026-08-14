@@ -33,10 +33,9 @@ class EventsProviderClient:
         api_key: str = "",
         timeout: float = 10.0
     ) -> None:
-        self._base_url = base_url.rstrip("/")
         headers = {"x-api-key": api_key} if api_key else {}
         self._http = httpx.AsyncClient(
-            base_url=self._base_url,
+            base_url=base_url.rstrip("/"),
             headers=headers,
             timeout=timeout,
             follow_redirects=True,
